@@ -1,28 +1,200 @@
+/* Guesstival site, 1.2 "Festival wristband": a daytime festival poster run off a risograph.
+   Cream paper, riso spot inks, a halftone sun in the corner, headlines printed twice out of
+   register, square printed boxes with a hard ink shadow, woven wristbands as dividers.
+   Light only (a poster has no dark mode). System fonts only, no scripts, no outside requests. */
+
 :root {
-  --paper: #F7F5F0; --surface: #FFFFFF; --ink: #16122A; --muted: #5A5470; --line: #E1DCEA; --accent: #5B2BE0;
-  color-scheme: light dark;
+  --paper: #F6F1E4;   /* every page */
+  --card: #FFFBF2;    /* tickets lying on the paper */
+  --ink: #221C26;     /* riso black: text, rules, shadows */
+  --faded: #5E5563;   /* secondary text, 6.3:1 on paper */
+  --pink: #FF48B0;
+  --blue: #006FB2;    /* deep enough for text on paper (4.75:1) */
+  --yellow: #FFE800;
+  --green: #00A95C;
+  --orange: #FF6C2F;
+  --spot: var(--yellow); /* each page sets its own ink for the halftone sun */
+
+  --poster: "Helvetica Neue", "Arial Narrow", "Roboto Condensed", -apple-system, BlinkMacSystemFont, Impact, sans-serif;
+  --body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Courier New", monospace;
+  --shadow: 4px 4px 0 var(--ink);
+  color-scheme: light;
 }
-@media (prefers-color-scheme: dark) {
-  :root { --paper: #0F0C1A; --surface: #1B1729; --ink: #F6F3FF; --muted: #ABA4C2; --line: #352E4D; --accent: #B6A2FF; }
+
+body.p-home    { --spot: var(--yellow); }
+body.p-support { --spot: var(--pink); }
+body.p-privacy { --spot: var(--green); }
+body.p-terms   { --spot: var(--orange); }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; background: var(--paper); }
+body {
+  margin: 0;
+  color: var(--ink);
+  background-color: var(--paper);
+  /* fiber grain: a faint noise so the cream reads as paper, not as a flat fill */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .13 0 0 0 0 .11 0 0 0 0 .15 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  font: 17px/1.6 var(--body);
+  overflow-x: hidden;
+  overflow-wrap: break-word;
 }
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--paper); color: var(--ink);
-  font: 17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif; }
-.hero { max-width: 720px; margin: 0 auto; padding: 44px 20px 0; text-align: center; }
-.hero img { width: 88px; height: 88px; border-radius: 20px; border: 1px solid var(--line); }
-.hero h1 { font-family: ui-rounded, -apple-system, system-ui, sans-serif; font-weight: 800; font-size: 42px; letter-spacing: -0.5px; margin: 14px 0 2px; }
-.hero p { margin: 0; color: var(--muted); font-family: ui-rounded, -apple-system, system-ui, sans-serif; }
-nav { margin-top: 22px; padding: 10px 0; font-size: 14px; letter-spacing: 1.2px; text-transform: uppercase;
-  border-top: 1px solid var(--line); border-bottom: 2px solid var(--ink); }
-nav a { color: var(--ink); text-decoration: none; margin: 0 12px; }
-nav a:hover, nav a[aria-current="page"] { color: var(--accent); }
-main { max-width: 720px; margin: 0 auto; padding: 24px 20px 64px; }
-h2 { font-family: ui-rounded, -apple-system, system-ui, sans-serif; font-weight: 700; font-size: 30px; margin: 28px 0 8px; }
-h3 { font-family: ui-rounded, -apple-system, system-ui, sans-serif; font-weight: 600; font-size: 20px; margin: 28px 0 4px;
-  padding-top: 18px; border-top: 1px solid var(--line); }
-a { color: var(--accent); }
-ol, ul { padding-left: 22px; }
-li { margin: 4px 0; }
-.card { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--accent); padding: 18px 22px; margin: 18px 0; }
-.muted { color: var(--muted); font-size: 15px; }
-footer { max-width: 720px; margin: 0 auto; text-align: center; color: var(--muted); font-size: 14px; padding: 20px; border-top: 2px solid var(--ink); }
+
+a { color: var(--ink); text-decoration-color: var(--pink); text-decoration-thickness: 3px; text-underline-offset: 3px; }
+a:hover { background: var(--yellow); }
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+::selection { background: var(--yellow); color: var(--ink); }
+.skip { position: absolute; left: -999px; top: 8px; z-index: 5; background: var(--yellow); border: 2px solid var(--ink); padding: 8px 12px; font: 700 13px/1 var(--mono); text-transform: uppercase; }
+.skip:focus { left: 16px; }
+
+/* ---------- Poster head ---------- */
+
+.poster { position: relative; isolation: isolate; max-width: 760px; margin: 0 auto; padding: 24px 16px 8px; }
+
+/* The halftone sun: a 45-degree dot screen in the page's ink (two square grids, the second
+   shifted half a cell) that fades out toward the middle of the page under a radial mask. */
+.sun {
+  position: absolute; z-index: -1; top: 0; right: 0;
+  width: min(92vw, 520px); height: min(92vw, 520px);
+  background-image:
+    radial-gradient(circle, var(--spot) 0 33%, transparent 35%),
+    radial-gradient(circle, var(--spot) 0 33%, transparent 35%);
+  background-size: 14px 14px;
+  background-position: 0 0, 7px 7px;
+  -webkit-mask-image: radial-gradient(circle at 100% 0, #000 0, rgba(0,0,0,.7) 26%, transparent 58%);
+          mask-image: radial-gradient(circle at 100% 0, #000 0, rgba(0,0,0,.7) 26%, transparent 58%);
+  pointer-events: none;
+}
+
+.brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; }
+.brand:hover { background: none; }
+.brand img { width: 52px; height: 52px; border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); background: var(--yellow); }
+.brand span { font: 900 22px/1 var(--poster); font-stretch: condensed; text-transform: uppercase; letter-spacing: .02em; }
+
+.label { font: 700 12px/1.3 var(--mono); text-transform: uppercase; letter-spacing: .16em; margin: 22px 0 8px; }
+.label .dot { display: inline-block; width: 10px; height: 10px; margin-right: 8px; background: var(--spot); border: 2px solid var(--ink); vertical-align: -1px; }
+
+/* A headline printed twice: the black pass on top of a pink pass that slipped a few px.
+   The pink copy is aria-hidden; the black one is the real text. */
+.misprint {
+  position: relative; margin: 0 0 14px;
+  font: 900 clamp(46px, 15vw, 120px)/.88 var(--poster); font-stretch: condensed;
+  text-transform: uppercase; letter-spacing: 0; overflow-wrap: anywhere;
+}
+.misprint .pass { position: absolute; inset: 0; color: var(--pink); mix-blend-mode: multiply;
+  transform: translate(5px, 4px); user-select: none; -webkit-user-select: none; pointer-events: none; }
+.lead { font-size: 19px; line-height: 1.5; max-width: 34em; margin: 0 0 22px; }
+
+/* Ticket-style page buttons: square, 2px rule, hard shadow; the current page is inked. */
+.tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 0 0 6px; }
+.tabs a {
+  display: block; padding: 12px 4px; text-align: center; text-decoration: none;
+  font: 700 12px/1 var(--mono); text-transform: uppercase; letter-spacing: .12em;
+  background: var(--card); border: 2px solid var(--ink); box-shadow: var(--shadow);
+  transition: transform .08s, box-shadow .08s;
+}
+.tabs a:hover { background: var(--yellow); }
+.tabs a:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--ink); }
+.tabs a[aria-current="page"] { background: var(--pink); }
+@media (max-width: 380px) { .tabs a { letter-spacing: .04em; font-size: 11px; } }
+
+/* ---------- Woven wristband divider ---------- */
+
+.band {
+  --a: var(--pink); --b: var(--yellow);
+  position: relative; height: 26px; margin: 30px 16px;
+  border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink);
+  background-color: var(--paper);
+  background-image:
+    repeating-linear-gradient(90deg, rgba(34,28,38,.16) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(45deg, var(--a) 0 9px, transparent 9px 18px),
+    repeating-linear-gradient(-45deg, var(--b) 0 9px, transparent 9px 18px);
+  background-blend-mode: multiply;
+  /* notched tail on the right, like the end of a fabric band */
+  clip-path: polygon(0 0, 100% 0, calc(100% - 16px) 50%, 100% 100%, 0 100%);
+}
+.band::before { /* the snap */
+  content: ""; position: absolute; left: 14px; top: 1px; width: 20px; height: 20px;
+  border-radius: 50%; background: var(--card); border: 2px solid var(--ink);
+  box-shadow: inset 0 0 0 4px var(--card), inset 0 0 0 6px var(--ink);
+}
+.band.b2 { --a: var(--blue); --b: var(--green); }
+.band.b3 { --a: var(--orange); --b: var(--pink); }
+.wrap > .band, main .band { margin-left: 0; margin-right: 0; }
+
+/* ---------- Page body ---------- */
+
+main { max-width: 760px; margin: 0 auto; padding: 0 16px 48px; }
+main > :first-child { margin-top: 0; }
+p, ul, ol { margin: 0 0 14px; }
+ul, ol { padding-left: 22px; }
+li { margin: 6px 0; }
+strong { font-weight: 700; }
+
+/* PosterRule: a mono title between two rules, as in TONIGHT'S LINEUP */
+.rule { display: flex; align-items: center; gap: 12px; margin: 40px 0 18px;
+  font: 700 14px/1.2 var(--mono); text-transform: uppercase; letter-spacing: .18em; }
+.rule::before, .rule::after { content: ""; flex: 1; border-top: 2px solid var(--ink); }
+
+h2.poster-h {
+  margin: 38px 0 10px; font: 900 clamp(30px, 8vw, 44px)/.95 var(--poster); font-stretch: condensed;
+  text-transform: uppercase; letter-spacing: .01em;
+}
+h3 { margin: 26px 0 6px; font: 800 20px/1.25 var(--body); }
+
+.meta { font: 700 12px/1.4 var(--mono); text-transform: uppercase; letter-spacing: .14em; color: var(--faded); margin: 0 0 20px; }
+
+/* A ticket lying on the paper */
+.ticket { position: relative; background: var(--card); border: 2px solid var(--ink); box-shadow: var(--shadow); margin: 0 0 22px; }
+.ticket .stub {
+  display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  padding: 10px 16px; border-bottom: 2px dashed var(--ink);
+  font: 700 12px/1.3 var(--mono); text-transform: uppercase; letter-spacing: .14em;
+}
+.ticket .body { padding: 14px 16px 4px; }
+.ticket h3 { margin: 0 0 6px; font: 900 30px/.95 var(--poster); font-stretch: condensed; text-transform: uppercase; }
+.ticket.pink .stub { background: var(--pink); }
+.ticket.blue .stub { background: var(--blue); color: var(--paper); }
+.ticket.green .stub { background: var(--green); }
+.ticket.orange .stub { background: var(--orange); }
+.ticket.yellow .stub { background: var(--yellow); }
+
+/* Questions on the support page: plain rows with a hard left rule */
+.qa { border-left: 6px solid var(--ink); padding: 2px 0 2px 16px; margin: 0 0 26px; }
+.qa h3 { margin-top: 0; }
+
+/* Rubber stamp */
+.stamp {
+  display: inline-block; margin: 6px 0 20px; padding: 8px 12px;
+  font: 800 14px/1.1 var(--mono); text-transform: uppercase; letter-spacing: .16em;
+  color: var(--blue); border: 4px double var(--blue); transform: rotate(-4deg);
+  background: rgba(255,251,242,.7);
+}
+
+/* The lineup: acts billed by size, headliner first */
+.lineup { list-style: none; padding: 0; margin: 0 0 8px; text-align: center; }
+.lineup li { margin: 0 0 22px; }
+.lineup .act { display: block; font: 900 40px/.9 var(--poster); font-stretch: condensed; text-transform: uppercase; }
+.lineup .act.head { font-size: clamp(56px, 15vw, 96px); }
+.lineup .act.mid { font-size: clamp(42px, 11vw, 64px); }
+.lineup .bill { display: block; max-width: 30em; margin: 6px auto 0; color: var(--faded); }
+.chip { display: inline-block; width: .55em; height: .55em; margin-right: .18em; border: 3px solid var(--ink); vertical-align: .08em; }
+.chip.pink { background: var(--pink); } .chip.blue { background: var(--blue); }
+.chip.green { background: var(--green); } .chip.orange { background: var(--orange); }
+
+.price-tag { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; }
+.price-tag .amount { font: 900 44px/.9 var(--poster); font-stretch: condensed; background: var(--yellow);
+  border: 2px solid var(--ink); padding: 8px 10px 6px; text-align: center; }
+.price-tag p { margin: 2px 0 10px; }
+
+.cta { display: inline-block; margin: 4px 0 8px; padding: 12px 18px; text-decoration: none;
+  font: 900 22px/1 var(--poster); font-stretch: condensed; text-transform: uppercase; letter-spacing: .02em;
+  background: var(--pink); border: 2px solid var(--ink); box-shadow: var(--shadow); transition: transform .08s, box-shadow .08s; }
+.cta:hover { background: var(--yellow); }
+.cta:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--ink); }
+
+footer { max-width: 760px; margin: 0 auto; padding: 0 16px 40px; font: 700 12px/1.6 var(--mono); text-transform: uppercase; letter-spacing: .1em; }
+footer p { margin: 0; }
+
+@media (prefers-reduced-motion: reduce) { .tabs a, .cta { transition: none; } }
+@media print { .sun, .band, .tabs, .skip { display: none; } body { background: #fff; } .ticket { box-shadow: none; } }
